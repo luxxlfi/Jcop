@@ -37,7 +37,7 @@ export default function LoginForm() {
 
     console.log(data);
     setErrorMsg(null);
-    router.push("/home");
+    router.push("/profile");
   };
 
   return (

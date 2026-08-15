@@ -36,7 +36,7 @@ export default function RegisterForm() {
     }
 
     console.log(data);
-    router.push("/home");
+    router.push("/profile");
   }
 
   return (
