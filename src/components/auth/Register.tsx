@@ -22,9 +22,10 @@ export default function RegisterForm() {
 
     setLoading(true);
 
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error, } = await supabase.auth.signUp({
       email,
       password,
+      
     });
 
     setLoading(false);
@@ -57,10 +58,6 @@ export default function RegisterForm() {
           {/* {FORM} */}
 
           <form className="space-y-4" onSubmit={handleRegister}>
-            <div className="space-y-2">
-              <Label htmlFor="name">Nama Lengkap</Label>
-              <Input id="name" type="text" placeholder="Luxfi" />
-            </div>
 
             <div className="space-y-2">
               <Label htmlFor="email">Alamat Email</Label>
