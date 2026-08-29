@@ -6,38 +6,35 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 export default function LoginForm() {
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
+
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
+  const [remember, setRemember] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const { data, error: signInError } = await supabase.auth.signInWithPassword(
-      {
-        email,
-        password,
-      },
-    );
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
     if (signInError) {
       setErrorMsg("pasword / email tidak sesuai");
-
-      setTimeout(() => {
-        setErrorMsg(null);
-      }, 5000);
-
+      setTimeout(() => setErrorMsg(null), 5000);
       return;
     }
 
     console.log(data);
     setErrorMsg(null);
     router.push("/profile");
+    router.refresh(); // opsional tapi sering bantu biar session kebaca di server
   };
 
   return (
@@ -47,6 +44,7 @@ export default function LoginForm() {
           {errorMsg}
         </div>
       )}
+
       {/* LEFT */}
       <main className="flex w-full flex-col justify-between p-8 lg:w-1/2 lg:p-12 xl:p-16">
         <div className="text-2xl font-bold tracking-tight">Jcop</div>
@@ -86,8 +84,11 @@ export default function LoginForm() {
               <Label htmlFor="email">Alamat Email</Label>
               <Input
                 id="email"
+                name="email"
                 type="email"
+                autoComplete="email"
                 placeholder="nama@perusahaan.com"
+                value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
@@ -106,8 +107,11 @@ export default function LoginForm() {
 
               <Input
                 id="password"
+                name="password"
                 type="password"
+                autoComplete="current-password"
                 placeholder="********"
+                value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
@@ -117,6 +121,8 @@ export default function LoginForm() {
                 id="remember"
                 type="checkbox"
                 className="h-4 w-4 rounded border-slate-300 accent-red-600"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
               />
 
               <Label htmlFor="remember" className="text-sm text-slate-500">
@@ -156,6 +162,7 @@ export default function LoginForm() {
           </nav>
         </footer>
       </main>
+
       {/* RIGHT */}
       <section className="hidden w-1/2 flex-col items-center justify-center bg-slate-50 lg:flex">
         <div className="relative w-full max-w-lg space-y-12 px-8 text-center">
