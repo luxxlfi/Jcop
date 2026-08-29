@@ -31,6 +31,10 @@ export default function CVClient({
   const [msg, setMsg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [review, setReview] = useState<any>(null);
+
   const onSave = async () => {
     setLoading(true);
     setMsg(null);
@@ -78,6 +82,32 @@ export default function CVClient({
     router.refresh();
   };
 
+  const onRefine = async () => {
+    if (!cvId) {
+      setAiError("Simpan CV dulu sebelum refine.");
+      return;
+    }
+
+    setAiLoading(true);
+    setAiError(null);
+
+    const res = await fetch("/api/ai/refine-cv", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cvId }),
+    });
+
+    const json = await res.json();
+    setAiLoading(false);
+
+    if (!res.ok) {
+      setAiError(json.error ?? "Gagal refine");
+      return;
+    }
+
+    setReview(json.review);
+  };
+
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border bg-white p-6 shadow-sm">
@@ -115,9 +145,22 @@ export default function CVClient({
             placeholder="Paste CV kamu di sini..."
             className="min-h-[320px] w-full rounded-md border border-slate-200 bg-white p-3 text-sm outline-none focus:border-red-300 focus:ring-2 focus:ring-red-100"
           />
-          
         </div>
+        <Button onClick={onRefine} disabled={aiLoading} variant="outline">
+          {aiLoading ? "Refining..." : "Refine AI"}
+        </Button>
       </div>
+
+      {aiError && <p className="text-sm text-red-600">{aiError}</p>}
+
+      {review?.improved_text && (
+        <div className="rounded-2xl border bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-bold">Hasil CV (AI)</h2>
+          <pre className="mt-3 whitespace-pre-wrap text-sm text-slate-800">
+            {review.improved_text}
+          </pre>
+        </div>
+      )}
     </div>
   );
 }
