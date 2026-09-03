@@ -33,19 +33,11 @@ function getModels() {
 export async function POST(req: Request) {
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { cvId } = await req.json().catch(() => ({ cvId: null }));
-
-  if (!cvId) {
-    return NextResponse.json({ error: "cvId wajib diisi" }, { status: 400 });
-  }
+  if (!cvId) return NextResponse.json({ error: "cvId wajib diisi" }, { status: 400 });
 
   const { data: cv, error: cvError } = await supabase
     .from("cvs")
@@ -54,32 +46,50 @@ export async function POST(req: Request) {
     .eq("user_id", user.id)
     .single();
 
-  if (cvError || !cv) {
-    return NextResponse.json({ error: "CV tidak ditemukan" }, { status: 404 });
-  }
+  if (cvError || !cv) return NextResponse.json({ error: "CV tidak ditemukan" }, { status: 404 });
 
   const raw = (cv.raw_text ?? "").trim();
-  if (!raw) {
-    return NextResponse.json({ error: "CV kosong" }, { status: 400 });
-  }
+  if (!raw) return NextResponse.json({ error: "CV kosong" }, { status: 400 });
+
+  // (opsional) biar gak kepanjangan
+  const cvText = raw.length > 12000 ? raw.slice(0, 12000) : raw;
 
   const prompt = `
-Kamu adalah asisten karier.
-Rapikan CV berikut agar lebih profesional untuk lamaran kerja.
+Kamu adalah reviewer CV (auditor), bukan penulis ulang CV.
 
-Aturan:
+Tugas:
+- BERI NILAI kualitas CV 0-100 (semakin tinggi semakin bagus).
+- Berikan koreksi/temuan yang jelas dan actionable.
+- Jangan menulis ulang CV. Jangan menghasilkan versi "improved CV".
 - Jangan mengarang fakta baru.
-- Boleh perbaiki struktur, bahasa, dan bullet points.
-- Output HARUS JSON valid (tanpa markdown) dengan format:
+
+Output HARUS JSON valid SAJA (tanpa markdown, tanpa teks tambahan) dengan format persis:
 
 {
-  "improved_text": "CV versi rapih (text)",
-  "suggestions": ["saran 1", "saran 2"],
-  "keywords": ["keyword 1", "keyword 2"]
+  "score": 70,
+  "summary": "Ringkasan singkat kualitas CV (1-2 kalimat).",
+  "strengths": ["poin bagus 1", "poin bagus 2"],
+  "issues": [
+    {
+      "title": "Masalah utama",
+      "severity": "low|medium|high",
+      "detail": "penjelasan masalah",
+      "how_to_fix": "cara benerinnya"
+    }
+  ],
+  "wording_warnings": [
+    {
+      "phrase": "kata/kalimat yang tidak cocok",
+      "why": "kenapa tidak cocok",
+      "better": "alternatif lebih profesional"
+    }
+  ],
+  "missing_sections": ["Bagian yang seharusnya ada tapi tidak ada"],
+  "ats_keywords_missing": ["keyword penting yang kemungkinan kurang (berdasarkan CV)"]
 }
 
-CV:
-${raw}
+CV yang direview:
+${cvText}
   `.trim();
 
   const models = getModels();
@@ -108,7 +118,7 @@ ${raw}
       body: JSON.stringify({
         model,
         messages: [{ role: "user", content: prompt }],
-        temperature: 0.4,
+        temperature: 0.2, // lebih stabil buat JSON
       }),
     });
 
@@ -125,15 +135,14 @@ ${raw}
     lastStatus = orRes.status;
     lastErrText = await orRes.text();
 
-    // kalau rate limit / server provider error -> coba model berikutnya
+    // rate limit / provider error -> coba model berikutnya
     if (orRes.status === 429 || orRes.status >= 500) continue;
 
-    // error lain (400/401/403) biasanya bukan “penuh”, jadi stop
+    // error lain -> stop
     return NextResponse.json({ error: lastErrText }, { status: lastStatus });
   }
 
   if (!content) {
-    // semua model gagal / penuh
     const status = lastStatus === 429 ? 429 : 503;
     return NextResponse.json(
       {
@@ -148,15 +157,17 @@ ${raw}
   }
 
   const parsed = tryParseJson(content) ?? extractJsonObject(content);
-  const improvedText = parsed?.improved_text ?? content;
+
+  // Kalau gagal parse JSON, tetep simpen raw biar bisa kamu debug
   const result = parsed ?? { raw: content };
 
+  // Simpen ke cv_reviews: improved_text dikosongin (karena kamu gak mau rewrite)
   const { data: saved, error: saveError } = await supabase
     .from("cv_reviews")
     .insert({
       cv_id: cv.id,
       user_id: user.id,
-      improved_text: improvedText,
+      improved_text: null,
       result: { ...result, _used_model: usedModel },
     })
     .select("id, improved_text, result, created_at")

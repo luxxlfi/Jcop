@@ -1,12 +1,13 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import Image from "next/image";
 import { Label } from "../ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
+import { AlertCircle } from "lucide-react";
 
 export default function RegisterForm() {
   const supabase = createClient();
@@ -16,49 +17,55 @@ export default function RegisterForm() {
   const [password, setPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   async function handleRegister(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     setLoading(true);
+    setErrorMsg(null);
 
-    const { data, error, } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      
     });
 
     setLoading(false);
 
     if (error) {
-      console.log(error);
+      setErrorMsg(error.message);
       return;
     }
 
-    console.log(data);
-    router.push("/profile");
+    router.push("/cv");
   }
 
   return (
     <div className="flex min-h-screen bg-white text-slate-950">
+      {errorMsg && (
+        <div className="fixed top-4 left-1/2 z-50 w-[92%] max-w-md -translate-x-1/2 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow flex items-center gap-2">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          <span>{errorMsg}</span>
+        </div>
+      )}
+
       {/* LEFT */}
       <main className="flex w-full flex-col justify-between p-8 lg:w-1/2 lg:p-12 xl:p-16">
-        <div className="text-2xl font-bold tracking-tight">Jcop</div>
+        <Link href="/" className="text-2xl font-bold tracking-tight">
+          <span className="text-red-600">J</span>cop
+        </Link>
 
-        <div className="mx-auto w-full max-w-[400px] space-y-8">
+        <div className="mx-auto w-full max-w-[400px] space-y-8 my-auto py-8">
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight">
-              Buat akun Anda
+            <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
+              Buat Akun Baru
             </h1>
-            <p className="text-slate-500">
-              Rasakan masa depan pertumbuhan profesional hari ini.
+            <p className="text-slate-500 text-sm">
+              Mulai tingkatkan kualitas CV dan resume kamu menggunakan kecerdasan buatan.
             </p>
           </div>
 
-          {/* {FORM} */}
-
           <form className="space-y-4" onSubmit={handleRegister}>
-
             <div className="space-y-2">
               <Label htmlFor="email">Alamat Email</Label>
               <Input
@@ -85,41 +92,19 @@ export default function RegisterForm() {
             </div>
 
             <Button
-              className="h-10 w-full bg-red-600 text-white hover:bg-red-700"
+              className="h-10 w-full bg-red-600 text-white hover:bg-red-700 font-semibold rounded-xl"
               type="submit"
               disabled={loading}
             >
-              {loading ? "Loading..." : " Daftar Sekarang "}
+              {loading ? "Mendaftarkan..." : "Daftar Akun Baru"}
             </Button>
           </form>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-slate-200" />
-            </div>
-
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-slate-500">
-                Atau lanjutkan dengan
-              </span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline" className="gap-2">
-              Google
-            </Button>
-
-            <Button variant="outline" className="gap-2">
-              GitHub
-            </Button>
-          </div>
 
           <p className="text-center text-sm text-slate-500">
             Sudah punya akun?{" "}
             <Link
               href="/login"
-              className="font-semibold text-slate-950 hover:underline"
+              className="font-semibold text-red-600 hover:underline"
             >
               Masuk
             </Link>
@@ -127,7 +112,7 @@ export default function RegisterForm() {
         </div>
 
         <footer className="text-center text-xs text-slate-500">
-          © 2024 Jcop. Dilindungi oleh keamanan kelas dunia.
+          © {new Date().getFullYear()} Jcop CV AI. Hak cipta dilindungi.
         </footer>
       </main>
 
@@ -146,13 +131,12 @@ export default function RegisterForm() {
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-4xl font-bold tracking-tight">
-              Mulai Perjalanan Karier Anda
+            <h2 className="text-4xl font-bold tracking-tight text-zinc-900">
+              Mulai Perjalanan Anda
             </h2>
 
-            <p className="mx-auto max-w-md text-lg text-slate-600">
-              Bergabunglah dengan 20,000+ profesional untuk menemukan peluang
-              terbaik.
+            <p className="mx-auto max-w-md text-base text-slate-600">
+              Daftar dalam 10 detik dan optimalkan CV kamu untuk siap melamar pekerjaan.
             </p>
           </div>
         </div>
@@ -160,3 +144,5 @@ export default function RegisterForm() {
     </div>
   );
 }
+
+

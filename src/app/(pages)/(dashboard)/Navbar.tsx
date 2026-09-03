@@ -2,20 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Menu, X, FileText, User, LogOut } from "lucide-react";
 import clsx from "clsx";
 
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 const items = [
-  
-  { href: "/profile", label: "Profile" },
-  { href: "/jobs", label: "Jops" },
-  { href: "/cv", label: "CV" },
-  
+  { href: "/cv", label: "Revisi CV", icon: FileText },
+  { href: "/profile", label: "Profile", icon: User },
 ];
 
 export default function Navbar() {
@@ -30,15 +26,22 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-outline/10 bg-surface/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/90 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 md:px-6">
-       <div className="">
-        <h1><span className="text-red-600">J</span>cop</h1>
-       </div>
-          
-        {/* Desktop nav */}
+        {/* Brand Logo - Original Red Jcop style */}
+        <Link href="/cv" className="flex items-center gap-1.5">
+          <span className="text-2xl font-extrabold tracking-tight text-zinc-900">
+            <span className="text-red-600">J</span>cop
+          </span>
+          <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-600">
+            CV AI
+          </span>
+        </Link>
+
+        {/* Desktop Navigation */}
         <nav className="hidden items-center gap-1 md:flex">
           {items.map((item) => {
+            const Icon = item.icon;
             const isActive = pathname === item.href;
 
             return (
@@ -46,31 +49,35 @@ export default function Navbar() {
                 key={item.href}
                 href={item.href}
                 className={clsx(
-                  "relative rounded-full px-4 py-2 font-body-md text-body-md transition-colors duration-200",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+                  "relative flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200",
                   isActive
-                    ? "text-primary font-semibold"
-                    : "text-on-surface-variant hover:text-primary",
+                    ? "bg-red-50 text-red-600 font-semibold"
+                    : "text-zinc-600 hover:text-red-600 hover:bg-slate-50"
                 )}
               >
-                {isActive && (
-                  <span className="absolute inset-0 -z-10 rounded-full bg-primary/10" />
-                )}
+                <Icon className={clsx("h-4 w-4", isActive ? "text-red-600" : "text-zinc-400")} />
                 {item.label}
               </Link>
             );
           })}
         </nav>
 
-        <div className="hidden md:block">
-          <Button onClick={handleLogout}>logout</Button>
+        {/* Logout Action */}
+        <div className="hidden md:flex items-center gap-3">
+          <Button
+            onClick={handleLogout}
+            className="bg-red-600 text-white hover:bg-red-700 rounded-xl px-5 transition-colors"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
+          </Button>
         </div>
 
-        {/* Mobile toggle */}
+        {/* Mobile menu toggle */}
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="inline-flex items-center justify-center rounded-md p-2 text-on-surface-variant hover:text-primary md:hidden"
+          className="inline-flex items-center justify-center rounded-lg p-2 text-zinc-600 hover:bg-zinc-100 md:hidden"
           aria-label="Toggle menu"
           aria-expanded={open}
         >
@@ -78,15 +85,16 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile nav */}
+      {/* Mobile Navigation */}
       <div
         className={clsx(
-          "overflow-hidden transition-[max-height] duration-300 ease-in-out md:hidden",
-          open ? "max-h-64" : "max-h-0",
+          "overflow-hidden transition-all duration-300 ease-in-out md:hidden border-t border-gray-100 bg-white",
+          open ? "max-h-64 opacity-100" : "max-h-0 opacity-0 pointer-events-none"
         )}
       >
-        <nav className="flex flex-col gap-1 border-t border-outline/10 px-4 py-3">
+        <nav className="flex flex-col gap-1 px-4 py-3">
           {items.map((item) => {
+            const Icon = item.icon;
             const isActive = pathname === item.href;
 
             return (
@@ -95,18 +103,32 @@ export default function Navbar() {
                 href={item.href}
                 onClick={() => setOpen(false)}
                 className={clsx(
-                  "rounded-lg px-3 py-2 font-body-md text-body-md transition-colors duration-200",
+                  "flex items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-medium transition-colors duration-200",
                   isActive
-                    ? "bg-primary/10 text-primary font-semibold"
-                    : "text-on-surface-variant hover:bg-primary/5 hover:text-primary",
+                    ? "bg-red-50 text-red-600 font-semibold"
+                    : "text-zinc-700 hover:bg-zinc-50 hover:text-red-600"
                 )}
               >
+                <Icon className={clsx("h-4 w-4", isActive ? "text-red-600" : "text-zinc-400")} />
                 {item.label}
               </Link>
             );
           })}
+
+          <Button
+            onClick={() => {
+              setOpen(false);
+              handleLogout();
+            }}
+            className="mt-2 w-full bg-red-600 text-white hover:bg-red-700 rounded-xl"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
+          </Button>
         </nav>
       </div>
     </header>
   );
 }
+
+
