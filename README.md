@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📄 Jcop — AI CV Revision & Resume Optimizer
 
-## Getting Started
+**Jcop** adalah platform berbasis AI (*Artificial Intelligence*) yang dirancang khusus untuk membantu pencari kerja mengoptimalkan CV dan Resume mereka agar **ATS-Friendly** (*Applicant Tracking System*) dan dilirik oleh *recruiter*.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🌟 Fitur Utama
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- 🔍 **AI CV Scanner & Reviewer**: Menganalisis teks CV secara mendalam dan memberikan **Skor Kesiapan ATS (0 - 100%)**.
+- 🛠️ **Koreksi & Panduan Perbaikan**: Mendeteksi kekurangan pada CV (tingkat prioritas *High, Medium, Low*) dilengkapi dengan panduan langkah demi langkah cara memperbaikinya.
+- ⚡ **Rekomendasi Wording & Frasa**: Memberikan saran perbandingan kalimat (*sebelum vs sesudah*) untuk mengubah kalimat pasif menjadi kalimat yang berdampak tinggi (*action-driven & quantifiable achievements*).
+- 🏷️ **Optimasi Kata Kunci ATS**: Memberikan rekomendasi *keywords* industri yang relevan dan daftar bagian CV penting yang terlewat.
+- 👤 **Profil Pengguna**: Manajemen profil profesional lengkap dengan info kontak, bio, dan tautan sosial (*LinkedIn, GitHub, Portfolio*).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🛠️ Teknologi yang Digunakan
 
-## Learn More
+- **Frontend / Framework**: [Next.js](https://nextjs.org/) (App Router, React 19, TypeScript)
+- **Styling**: [TailwindCSS](https://tailwindcss.com/)
+- **Icon Set**: [Lucide React](https://lucide.dev/)
+- **Backend & Database**: [Supabase](https://supabase.com/) (Auth, PostgreSQL Database)
+- **AI Integration**: Google Gemini AI Engine
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🚀 Cara Menjalankan Proyek di Lokal
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Prasyarat
+- [Node.js](https://nodejs.org/) (versi 18.x atau lebih baru)
+- `npm` atau `yarn`
 
-## Deploy on Vercel
+### Langkah-Langkah Instalasi
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **Clone Repository**
+   ```bash
+   git clone https://github.com/username-anda/jcop.git
+   cd jcop
